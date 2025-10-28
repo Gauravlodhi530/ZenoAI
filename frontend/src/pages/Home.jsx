@@ -16,6 +16,7 @@ import {
   setChats,
 } from "../store/chatSlice.js";
 import { logout } from "../store/authSlice.js";
+import { API_URL, SOCKET_URL } from '../config/api';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,7 @@ const Home = () => {
     if (!title) return;
 
     const response = await axios.post(
-      "http://localhost:4000/api/chat",
+      `${API_URL}/api/chat`,
       { title },
       { withCredentials: true }
     );
@@ -46,7 +47,7 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:4000/api/auth/logout",
+        `${API_URL}/api/auth/logout`,
         {},
         { withCredentials: true }
       );
@@ -62,12 +63,12 @@ const Home = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/api/chat/chats", { withCredentials: true })
+      .get(`${API_URL}/api/chat/chats`, { withCredentials: true })
       .then((response) => {
         dispatch(setChats(response.data.chats.reverse()));
       });
 
-    const tempSocket = io("http://localhost:4000", { withCredentials: true });
+    const tempSocket = io(SOCKET_URL, { withCredentials: true });
 
     tempSocket.on("ai-response", (messagePayload) => {
       setMessages((prevMessages) => [
@@ -128,7 +129,7 @@ const Home = () => {
 
   const getMessages = async (chatId) => {
     const response = await axios.get(
-      `http://localhost:4000/api/chat/messages/${chatId}`,
+      `${API_URL}/api/chat/messages/${chatId}`,
       { withCredentials: true }
     );
 

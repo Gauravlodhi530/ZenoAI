@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginStart, loginFailure, clearError } from '../store/authSlice';
 import axios from 'axios';
+import { API_URL } from '../config/api';
 
 const Register = () => {
     const [ form, setForm ] = useState({ email: '', firstname: '', lastname: '', password: '', confirmPassword: '' });
@@ -41,7 +42,7 @@ const Register = () => {
         }
 
         try {
-            const response = await axios.post("http://localhost:4000/api/auth/register", {
+            const response = await axios.post(`${API_URL}/api/auth/register`, {
                 email: form.email,
                 fullName: {
                     firstName: form.firstname,
