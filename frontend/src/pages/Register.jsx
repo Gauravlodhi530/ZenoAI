@@ -1,150 +1,223 @@
-import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import axios from "axios";
-const emailRegex = /^\S+@\S+$/i;
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginStart, loginFailure, clearError } from '../store/authSlice';
+import axios from 'axios';
 
-export default function Register() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+const Register = () => {
+    const [ form, setForm ] = useState({ email: '', firstname: '', lastname: '', password: '', confirmPassword: '' });
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { loading, error } = useSelector(state => state.auth);
 
-  const onSubmit = (data) => {
-    axios
-      .post("http://localhost:3000/api/auth/register", {
-        fullName: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-        },
-        email: data.email,
-        password: data.password,
-      })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    console.log("Register Data:", data);
-    // Example: send { firstName, secondName, email, password } to API
-    // axios.post('/api/register', data)
-  };
+    // Validation states
+    const isPasswordValid = form.password.length >= 6;
+    const isPasswordMatching = form.password === form.confirmPassword && form.confirmPassword.length > 0;
+    const showPasswordError = form.confirmPassword.length > 0 && form.password !== form.confirmPassword;
 
-  return (
-    <div className="mx-auto max-w-xl w-full">
-      <div className="text-center mt-8 sm:mt-10">
-        <div className="mx-auto h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-semibold">
-          G
-        </div>
-        <h1 className="mt-6 text-3xl font-semibold">Create your account</h1>
-      </div>
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setForm(f => ({ ...f, [ name ]: value }));
+        
+        // Clear errors when user starts typing
+        if (error) {
+            dispatch(clearError());
+        }
+    }
 
-      <div className="mt-8 sm:mt-10">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium">First Name</label>
-            <input
-              type="text"
-              placeholder="John"
-              {...register("firstName", { required: "First name is required" })}
-              className={[
-                "mt-1 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-900",
-                errors.firstName ? "border-red-500" : "border-gray-300",
-              ].join(" ")}
-            />
-            {errors.firstName && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.firstName.message}
-              </p>
-            )}
-          </div>
+    async function handleSubmit(e) {
+        e.preventDefault();
+        
+        // Clear any previous errors
+        dispatch(loginStart());
+        dispatch(clearError());
 
-          <div>
-            <label className="block text-sm font-medium">Last Name</label>
-            <input
-              type="text"
-              placeholder="Smith"
-              {...register("lastName", {
-                required: "Last name is required",
-              })}
-              className={[
-                "mt-1 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-900",
-                errors.lastName ? "border-red-500" : "border-gray-300",
-              ].join(" ")}
-            />
-            {errors.lastName && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.lastName.message}
-              </p>
-            )}
-          </div>
+        // Final validation before submit
+        if (form.password.length < 6) {
+            return; // Don't submit if invalid - visual feedback already shown
+        }
+        if (form.password !== form.confirmPassword) {
+            return; // Don't submit if passwords don't match - visual feedback already shown
+        }
 
-          <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              placeholder="john@example.com"
-              {...register("email", {
-                required: "Email is required",
-                pattern: { value: emailRegex, message: "Invalid email" },
-              })}
-              className={[
-                "mt-1 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-900",
-                errors.email ? "border-red-500" : "border-gray-300",
-              ].join(" ")}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">Password</label>
-            <input
-              type="password"
-              placeholder="********"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 8,
-                  message: "At least 8 characters",
+        try {
+            const response = await axios.post("http://localhost:4000/api/auth/register", {
+                email: form.email,
+                fullName: {
+                    firstName: form.firstname,
+                    lastName: form.lastname
                 },
-              })}
-              className={[
-                "mt-1 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-900",
-                errors.password ? "border-red-500" : "border-gray-300",
-              ].join(" ")}
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+                password: form.password
+            }, {
+                withCredentials: true
+            });
 
-          <div className="rounded-md border p-3 text-sm bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-            Your password must contain:{" "}
-            <span className="font-medium">At least 8 characters</span>
-          </div>
+            console.log('Registration successful:', response.data);
+            // Navigate to login page after successful registration
+            navigate("/login", { 
+                state: { 
+                    message: "Registration successful! Please log in with your credentials." 
+                }
+            });
+        } catch (err) {
+            console.error('Registration failed:', err);
+            const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+            dispatch(loginFailure(errorMessage));
+        }
+    }
 
-          <button
-            type="submit"
-            className="w-full bg-emerald-600 text-white rounded-md py-2.5 hover:bg-emerald-700 transition"
-          >
-            Continue
-          </button>
-        </form>
+    return (
+        <div className="auth-container">
+            <div className="gaming-auth-card">
+                {/* Left Gaming Panel */}
+                <div className="gaming-panel">
+                    <div className="gaming-content">
+                        <h1 className="gaming-logo">ZenoAi</h1>
+                        <h2 className="gaming-tagline">Chat. Remember. Repeat.</h2>
+                        <p className="gaming-description">
+                           Register now and experience intelligent AI conversations that stay with you. <br /> ZenoAI remembers everything important — so you don’t have to.
+                        </p>
+                        
+                        
+                    </div>
+                    
+                </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{" "}
-          <Link to="/login" className="text-emerald-600 hover:underline">
-            Log in
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
-}
+                {/* Right Auth Panel */}
+                <div className="auth-panel">
+                    <div className="gaming-auth-header">
+                        <h2>Create Account</h2>
+                        <p className="gaming-auth-subtitle">Join the gaming community</p>
+                    </div>
+                    
+                    {/* Only show server errors (not validation errors) */}
+                    {error && !error.includes('must be') && !error.includes('match') && (
+                        <div className="error-message elegant">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} noValidate>
+                        <div className="gaming-form-group">
+                            <input 
+                                name="email" 
+                                type="email" 
+                                className="gaming-input"
+                                autoComplete="email" 
+                                placeholder="Email Address" 
+                                value={form.email} 
+                                onChange={handleChange} 
+                                required 
+                                aria-label="Email address"
+                            />
+                        </div>
+                        
+                        <div className="gaming-form-group">
+                            <input 
+                                name="firstname" 
+                                className="gaming-input"
+                                placeholder="First Name" 
+                                value={form.firstname} 
+                                onChange={handleChange} 
+                                required 
+                            />
+                        </div>
+
+                        <div className="gaming-form-group">
+                            <input 
+                                name="lastname" 
+                                className="gaming-input"
+                                placeholder="Last Name" 
+                                value={form.lastname} 
+                                onChange={handleChange} 
+                                required 
+                            />
+                        </div>
+                        
+                        <div className="gaming-form-group">
+                            <div className="input-with-icon">
+                                <input 
+                                    name="password" 
+                                    className={`gaming-input ${form.password.length > 0 ? (isPasswordValid ? 'input-valid' : 'input-invalid') : ''}`}
+                                    type="password"
+                                    autoComplete="new-password" 
+                                    placeholder="Password (min 6 characters)" 
+                                    value={form.password} 
+                                    onChange={handleChange} 
+                                    required 
+                                    minLength={6} 
+                                    aria-label="Password"
+                                />
+                                {form.password.length > 0 && (
+                                    isPasswordValid ? (
+                                        <svg className="input-icon-right input-valid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <polyline points="9 12 11 14 15 10"/>
+                                        </svg>
+                                    ) : (
+                                        <svg className="input-icon-right input-invalid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" y1="8" x2="12" y2="12"/>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        </svg>
+                                    )
+                                )}
+                            </div>
+                            {form.password.length > 0 && !isPasswordValid && (
+                                <div className="field-error-message">Password must be at least 6 characters</div>
+                            )}
+                        </div>
+
+                        <div className="gaming-form-group">
+                            <div className="input-with-icon">
+                                <input
+                                    name="confirmPassword"
+                                    className={`gaming-input ${form.confirmPassword.length > 0 ? (isPasswordMatching ? 'input-valid' : 'input-invalid') : ''}`}
+                                    type="password"
+                                    placeholder="Confirm Password"
+                                    value={form.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                    aria-label="Confirm password"
+                                />
+                                {form.confirmPassword.length > 0 && (
+                                    isPasswordMatching ? (
+                                        <svg className="input-icon-right input-valid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <polyline points="9 12 11 14 15 10"/>
+                                        </svg>
+                                    ) : (
+                                        <svg className="input-icon-right input-invalid-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="10"/>
+                                            <line x1="12" y1="8" x2="12" y2="12"/>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                        </svg>
+                                    )
+                                )}
+                            </div>
+                            {showPasswordError && (
+                                <div className="field-error-message">Passwords do not match</div>
+                            )}
+                        </div>
+                        
+                        <button type="submit" className="gaming-btn" disabled={loading}>
+                            {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
+                        </button>
+                    </form>
+                    
+                    <div className="gaming-footer">
+                        <p>Already have an account? <Link to="/login">Sign In</Link></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Register;
+

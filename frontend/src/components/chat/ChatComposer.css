@@ -1,0 +1,226 @@
+/* Modern chat composer */
+.composer {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.7), transparent);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.composer-surface {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    max-width: 900px;
+    width: 100%;
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    padding: 16px 20px;
+    position: relative;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.composer-surface:focus-within {
+    background: rgba(40, 40, 40, 0.9);
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.composer-field { 
+    flex: 1; 
+    position: relative; 
+    display: flex;
+    flex-direction: column;
+}
+
+.composer-input {
+    width: 100%;
+    resize: none;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #f5f5f5;
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    max-height: 200px;
+    min-height: 24px;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.composer-input::placeholder { 
+    color: #888; 
+    font-weight: 400;
+}
+
+.composer-input::-webkit-scrollbar {
+    width: 4px;
+}
+
+.composer-input::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.composer-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+    pointer-events: none;
+    user-select: none;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.composer-surface:focus-within .composer-hint {
+    opacity: 1;
+}
+
+/* Enhanced send button */
+.send-btn.icon-btn {
+    --size: 44px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.send-btn.icon-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.send-btn.icon-btn:hover:not(:disabled)::before {
+    opacity: 1;
+}
+
+.send-btn.icon-btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.send-btn.icon-btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.95);
+}
+
+.send-btn.icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #333;
+}
+
+.send-btn.icon-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.5);
+}
+
+.send-icon {
+    display: inline-flex;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s ease;
+}
+
+.send-btn.icon-btn:hover:not(:disabled) .send-icon {
+    transform: translateX(2px);
+}
+
+.send-icon svg {
+    transition: transform 0.2s ease;
+}
+
+/* Additional controls */
+.composer-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+.control-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #888;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.control-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .composer {
+        padding: 16px;
+    }
+    
+    .composer-surface {
+        border-radius: 24px;
+        padding: 14px 16px;
+    }
+    
+    .send-btn.icon-btn {
+        --size: 40px;
+    }
+    
+    .composer-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
+
+@media (max-width: 480px) {
+    .composer-hint {
+        display: none;
+    }
+    
+    .composer-controls {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .send-btn.icon-btn, 
+    .send-icon svg, 
+    .composer-surface,
+    .control-btn {
+        transition: none;
+    }
+}

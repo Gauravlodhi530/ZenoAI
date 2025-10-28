@@ -1,158 +1,92 @@
-const { Server, Socket } = require("socket.io");
+const { Server } = require("socket.io");
 const cookie = require("cookie");
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const aiServices = require("../services/ai.services");
 const messageModel = require("../models/message.model");
-const { createMemory, queryMemory } = require("../services/vector.services");
-const {
-  chat,
-} = require("@pinecone-database/pinecone/dist/assistant/data/chat");
-const { text } = require("express");
 
 function initSocketServer(httpServer) {
-  const io = new Server(httpServer, {});
+  const io = new Server(httpServer, {
+    cors: {
+      origin: "http://localhost:5173",
+      credentials: true,
+    },
+  });
 
   io.use(async (socket, next) => {
-    const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
-
-    if (!cookies.token) {
-      next(new Error("Authentication error"));
-    }
     try {
-      const decode = jwt.verify(cookies.token, process.env.JWT_SECRET);
+      const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
 
+      if (!cookies.token) {
+        return next(new Error("Authentication error: No token provided"));
+      }
+
+      const decode = jwt.verify(cookies.token, process.env.JWT_SECRET);
       const user = await userModel.findById(decode.id);
 
-      socket.user = user;
+      if (!user) {
+        return next(new Error("Authentication error: User not found"));
+      }
 
+      socket.user = user;
       next();
     } catch (error) {
-      next(new Error("Unauthentication"));
+      next(new Error("Authentication error: " + error.message));
     }
   });
   io.on("connection", (socket) => {
     socket.on("ai-message", async (messagePayload) => {
-      /*
-      const message = await messageModel.create({
-        chat: messagePayload.chat,
-        content: messagePayload.content,
-        user: socket.user._id,
-        role: "user",
-      });
-      const vectors = await aiServices.generateVector(messagePayload.content);
-     */
-      const [message, vectors] = await Promise.all([
-        messageModel.create({
+      try {
+        // Create user message
+        const message = await messageModel.create({
           chat: messagePayload.chat,
           content: messagePayload.content,
           user: socket.user._id,
           role: "user",
-        }),
-        aiServices.generateVector(messagePayload.content),
-      ]);
+        });
 
-      await createMemory({
-        vectors,
-        messageId: message._id,
-        metadata: {
-          chat: messagePayload.chat,
-          user: socket.user._id,
-          text: messagePayload.content,
-        },
-      });
-
-      //  let memory = await queryMemory({
-      //   queryVector: vectors,
-      //   limit: 3,
-      //   metadata: {
-      //     user: socket.user._id,
-      //   },
-      // });
-      
-      // const chatHistory = (
-      //   await messageModel
-      //     .find({
-      //       chat: messagePayload.chat,
-      //     })
-      //     .sort({ createAt: -1 })
-      //     .limit(20)
-      //     .lean()
-      // ).reverse();
-
-      const [memory, chatHistory] = await Promise.all([
-        queryMemory({
-          queryVector: vectors,
-          limit: 3,
-          metadata: {
-            user: socket.user._id,
-          },
-        }),
-        messageModel
+        // Get chat history
+        const chatHistory = await messageModel
           .find({
             chat: messagePayload.chat,
           })
-          .sort({ createAt: -1 })
+          .sort({ createdAt: -1 })
           .limit(20)
           .lean()
-          .then((messages) => messages.reverse()),
-      ]);
+          .then((messages) => messages.reverse());
 
+        // Prepare conversation context
+        const conversationHistory = chatHistory.map((item) => {
+          return {
+            role: item.role === "model" ? "model" : "user",
+            parts: [{ text: item.content }],
+          };
+        });
 
-      const shortMemory = chatHistory.map((item) => {
-        return {
-          role: item.role,
-          parts: [{ text: item.content }],
-        };
-      });
-      const longMemory = {
-        role: "user",
-        parts: [
-          {
-            text: `these are some privious messages from chat, use them generate best responce you can.\n
-            ${memory.map((item) => item.metadata.text).join("\n")}`,
-          },
-        ],
-      };
+        // Generate AI response
+        const response = await aiServices.generateContent(conversationHistory);
 
-      const response = await aiServices.generateContent([
-        longMemory,
-        ...shortMemory,
-      ]);
+        // Send response to client
+        socket.emit("ai-response", {
+          content: response,
+          chat: messagePayload.chat,
+        });
 
-      // const responseMessage = await messageModel.create({
-      //   chat: messagePayload.chat,
-      //   content: response,
-      //   user: socket.user._id,
-      //   role: "model",
-      // });
-
-      // const responseVector = await aiServices.generateVector(response);
-
-      socket.emit("ai-responce", {
-        content: response,
-        chat: messagePayload.chat,
-      });
-
-      const [responseMessage, responseVector] = await Promise.all([
-        messageModel.create({
+        // Save AI response
+        await messageModel.create({
           chat: messagePayload.chat,
           content: response,
           user: socket.user._id,
           role: "model",
-        }),
-        aiServices.generateVector(response),
-      ]);
-
-      await createMemory({
-        vectors: responseVector,
-        messageId: responseMessage._id,
-        metadata: {
+        });
+      } catch (error) {
+        socket.emit("ai-response", {
+          content:
+            "Sorry, I encountered an error while processing your message. Please try again.",
           chat: messagePayload.chat,
-          user: socket.user._id,
-          text: response,
-        },
-      });
+          error: true,
+        });
+      }
     });
   });
 }

@@ -1,0 +1,445 @@
+/* Container & flow */
+.messages {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Message container */
+.msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+
+.msg-user {
+    align-self: flex-end;
+}
+
+.msg-ai {
+    align-self: flex-start;
+}
+
+/* Message header with avatar and info */
+.msg-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.msg-user .msg-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.msg-ai .msg-avatar {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.msg-avatar svg {
+    width: 18px;
+    height: 18px;
+}
+
+.msg-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.msg-role {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.msg-time {
+    font-size: 12px;
+    color: #888;
+}
+
+/* Message bubble */
+.msg-bubble {
+    border-radius: 18px;
+    position: relative;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.msg-user .msg-bubble {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    color: white;
+    margin-left: 44px;
+}
+
+.msg-ai .msg-bubble {
+    background: rgba(20, 20, 20, 0.8);
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.msg-content {
+    padding: 16px 20px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 15px;
+}
+
+/* Hover effects */
+.msg:hover .msg-bubble {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Actions bar */
+.msg-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    margin-left: 44px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.msg:hover .msg-actions,
+.msg:focus-within .msg-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #888;
+    padding: 0;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+.action-btn:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.action-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+/* Gemini-style typing indicator */
+.typing-indicator {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gemini-typing {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    animation: geminiPulse 1.5s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes geminiPulse {
+    0%, 60%, 100% {
+        transform: scale(0.8);
+        opacity: 0.4;
+    }
+    30% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .messages {
+        padding: 16px;
+        gap: 20px;
+    }
+    
+    .msg {
+        max-width: 95%;
+    }
+    
+    .msg-content {
+        padding: 14px 16px;
+        font-size: 14px;
+    }
+    
+    .msg-avatar {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .msg-avatar svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .msg-actions {
+        margin-left: 40px;
+    }
+}/* Enha
+nced AI Response Formatting */
+.ai-response {
+    line-height: 1.6;
+}
+
+.ai-response .paragraph {
+    margin-bottom: 16px;
+}
+
+.ai-response .paragraph:last-child {
+    margin-bottom: 0;
+}
+
+/* Headings */
+.heading {
+    margin: 20px 0 12px 0;
+    font-weight: 600;
+    color: #f0f0f0;
+}
+
+.heading-1 { font-size: 1.5rem; }
+.heading-2 { font-size: 1.3rem; }
+.heading-3 { font-size: 1.1rem; }
+.heading-4 { font-size: 1rem; }
+
+/* Code blocks */
+.code-block {
+    margin: 16px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-language {
+    font-size: 12px;
+    color: #888;
+    font-weight: 500;
+}
+
+.copy-code-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.copy-code-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.copy-code-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.code-content {
+    padding: 12px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #e0e0e0;
+}
+
+.code-content::-webkit-scrollbar {
+    height: 8px;
+}
+
+.code-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.code-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Inline code */
+.inline-code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    color: #f0f0f0;
+}
+
+/* Bullet points */
+.bullet-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.bullet {
+    color: #667eea;
+    font-weight: bold;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.bullet-text {
+    flex: 1;
+}
+
+/* Text formatting */
+.ai-response strong {
+    font-weight: 600;
+    color: #f0f0f0;
+}
+
+.message-link {
+    color: #667eea;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    transition: all 0.2s ease;
+}
+
+.message-link:hover {
+    color: #764ba2;
+    border-bottom-color: rgba(118, 75, 162, 0.5);
+}
+
+/* Simple text content */
+.message-text {
+    line-height: 1.6;
+}
+
+.text-content {
+    margin-bottom: 12px;
+}
+
+.text-content:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .code-header {
+        padding: 6px 8px;
+    }
+    
+    .code-content {
+        padding: 8px;
+        font-size: 13px;
+    }
+    
+    .copy-code-btn {
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+    
+    .heading-1 { font-size: 1.3rem; }
+    .heading-2 { font-size: 1.2rem; }
+    .heading-3 { font-size: 1.05rem; }
+}

@@ -61,9 +61,43 @@ async function loginUser(req, res) {
 
   res.status(200).json({
     message: "user login successfully",
-    user,
+    user: {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+    },
     token,
   });
 }
 
-module.exports = { registerUser, loginUser };
+async function getCurrentUser(req, res) {
+  try {
+    res.status(200).json({
+      message: "user retrieved successfully",
+      user: {
+        id: req.user._id,
+        fullName: req.user.fullName,
+        email: req.user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "server error",
+    });
+  }
+}
+
+async function logoutUser(req, res) {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({
+      message: "user logged out successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "server error",
+    });
+  }
+}
+
+module.exports = { registerUser, loginUser, getCurrentUser, logoutUser };

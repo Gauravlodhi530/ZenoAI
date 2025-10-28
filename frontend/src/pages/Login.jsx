@@ -1,67 +1,139 @@
-// src/pages/Login.jsx
-import { useForm } from "react-hook-form";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginStart, loginSuccess, loginFailure, clearError } from '../store/authSlice';
+import axios from 'axios';
 
-export default function Login() {
-	const navigate = useNavigate();
-	const { register, handleSubmit, formState: { errors } } = useForm();
+const Login = () => {
+    const [form, setForm] = useState({ email: '', password: '' });
+    const [showPassword, setShowPassword] = useState(false);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { loading, error } = useSelector(state => state.auth);
+    const [successMessage, setSuccessMessage] = useState('');
 
-	const onSubmit = (data) => {
-		axios
-			.post("http://localhost:3000/api/auth/login", { email: data.email, password: data.password })
-			.then(() => navigate("/home"))
-			.catch((err) => console.log(err));
-	};
+    useEffect(() => {
+        if (location.state?.message) {
+            setSuccessMessage(location.state.message);
+        }
+        dispatch(clearError());
+    }, [location.state, dispatch]);
 
-	return (
-		<div className="mx-auto max-w-xl w-full">
-			<div className="text-center mt-8 sm:mt-10">
-				<div className="mx-auto h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-semibold">G</div>
-				<h1 className="mt-6 text-3xl font-semibold">Log in to your account</h1>
-			</div>
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setForm({ ...form, [name]: value });
+    }
 
-			<div className="mt-8 sm:mt-10">
-				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-					<div>
-						<label htmlFor="email" className="block text-sm font-medium">Email</label>
-						<input
-							id="email"
-							type="email"
-							placeholder="you@example.com"
-							{...register("email", { required: "This field is required" })}
-							className={`mt-1 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-900 ${errors.email ? "border-red-500" : "border-gray-300"}`}
-						/>
-						{errors.email && (
-							<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-						)}
-					</div>
+    async function handleSubmit(e) {
+        e.preventDefault();
+        dispatch(loginStart());
+        dispatch(clearError());
+        setSuccessMessage('');
 
-					<div>
-						<label htmlFor="password" className="block text-sm font-medium">Password</label>
-						<input
-							id="password"
-							type="password"
-							placeholder="********"
-							{...register("password", { required: "Password is required", minLength: { value: 1, message: "At least 8 characters" } })}
-							className={`mt-1 w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-900 ${errors.password ? "border-red-500" : "border-gray-300"}`}
-						/>
-						{errors.password && (
-							<p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-						)}
-					</div>
+        try {
+            const response = await axios.post("http://localhost:4000/api/auth/login", {
+                email: form.email,
+                password: form.password
+            }, {
+                withCredentials: true
+            });
 
-					<div className="flex justify-end">
-						<a href="#" className="text-sm text-emerald-600 hover:underline">Forgot password?</a>
-					</div>
+            console.log('Login successful:', response.data);
+            dispatch(loginSuccess(response.data.user));
+            navigate("/");
+        } catch (err) {
+            console.error('Login failed:', err);
+            const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials.';
+            dispatch(loginFailure(errorMessage));
+        }
+    }
 
-					<button type="submit" className="w-full bg-emerald-600 text-white rounded-md py-2.5 hover:bg-emerald-700 transition">Continue</button>
-				</form>
+    return (
+        <div className="auth-container">
+            <div className="gaming-auth-card">
+                {/* Left Gaming Panel */}
+                <div className="gaming-panel">
+                    <div className="gaming-content">
+                        <h1 className="gaming-logo">ZenoAi</h1>
+                        <h2 className="gaming-tagline">Good to See You Again!</h2>
+                        <p className="gaming-description">
+                           Log in to reconnect with ZenoAI and pick up your ideas right where you paused. <br />Continue your smart conversations seamlessly — your thoughts, prompts, and creativity are always safe with us.
+                        </p>
+                       
+                       
+                    </div>
+                    
+                </div>
 
-				<p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-					Are you new? <Link to="/register" className="text-emerald-600 hover:underline">Create an Account</Link>
-				</p>
-			</div>
-		</div>
-	);
-}
+                {/* Right Auth Panel */}
+                <div className="auth-panel">
+                    <div className="gaming-auth-header">
+                        <h2> Login To Your Account</h2>
+                    </div>
+
+                    {successMessage && (
+                        <div className="success-message elegant">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22,4 12,14.01 9,11.01"/>
+                            </svg>
+                            {successMessage}
+                        </div>
+                    )}
+                    
+                    {error && (
+                        <div className="error-message elegant">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} noValidate>
+                        <div className="gaming-form-group">
+                            <input 
+                                name="email" 
+                                type="email" 
+                                className="gaming-input"
+                                autoComplete="email" 
+                                placeholder="Username" 
+                                value={form.email}
+                                onChange={handleChange} 
+                                required 
+                                aria-label="Email address"
+                            />
+                        </div>
+                        
+                        <div className="gaming-form-group">
+                            <input 
+                                name="password" 
+                                className="gaming-input"
+                                type={showPassword ? "text" : "password"}
+                                autoComplete="current-password" 
+                                placeholder="Password" 
+                                value={form.password}
+                                onChange={handleChange} 
+                                required 
+                                aria-label="Password"
+                            />
+                        </div>
+                        
+                        <button type="submit" className="gaming-btn" disabled={loading}>
+                            {loading ? 'SIGNING IN...' : 'LOGIN'}
+                        </button>
+                    </form>
+                    
+                    <div className="gaming-footer">
+                        <p>Don't have an account? <Link to="/register">Create Account</Link></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Login;
