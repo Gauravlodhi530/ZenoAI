@@ -36,17 +36,36 @@ const Home = () => {
     if (!title) return;
 
     try {
+      console.log("Creating chat with title:", title);
+      console.log("API URL:", API_URL);
+      console.log("User:", user);
+      
       const response = await axios.post(
         `${API_URL}/api/chat`,
         { title },
         { withCredentials: true }
       );
-      getMessages(response.data.chat._id);
+      
+      console.log("Chat created successfully:", response.data.chat);
+      
+      // Add the new chat to Redux state
       dispatch(startNewChat(response.data.chat));
+      
+      // Clear messages for new chat
+      setMessages([]);
+      
+      // Close sidebar on mobile
       setSidebarOpen(false);
     } catch (error) {
       console.error("Error creating chat:", error);
-      alert("Failed to create chat. Please try again.");
+      console.error("Error response:", error.response);
+      console.error("Error status:", error.response?.status);
+      console.error("Error data:", error.response?.data);
+      
+      const errorMessage = error.response?.data?.message || error.message || "Unknown error";
+      const statusCode = error.response?.status || "No response";
+      
+      alert(`Failed to create chat!\n\nError: ${errorMessage}\nStatus: ${statusCode}\n\nPlease check:\n✓ Backend is running (http://localhost:3000)\n✓ You are logged in\n✓ MongoDB is connected\n✓ Check browser console for details`);
     }
   };
 
