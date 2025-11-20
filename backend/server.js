@@ -7,8 +7,10 @@ const httpServer = require("http").createServer(app);
 connectedDB();
 initSocketServer(httpServer);
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`http://localhost:${PORT}`);
+  
 });

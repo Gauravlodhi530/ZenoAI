@@ -65,6 +65,13 @@ const chatSlice = createSlice({
             prepare(chatId, content, error = false) {
                 return { payload: { chatId, message: { id: nanoid(), role: 'ai', content, ts: Date.now(), ...(error ? { error: true } : {}) } } };
             }
+        },
+        deleteChat(state, action) {
+            const chatId = action.payload;
+            state.chats = state.chats.filter(c => c._id !== chatId);
+            if (state.activeChatId === chatId) {
+                state.activeChatId = state.chats.length > 0 ? state.chats[0]._id : null;
+            }
         }
     }
 });
@@ -78,7 +85,8 @@ export const {
     sendingFinished,
     addUserMessage,
     addAIMessage,
-    setChats
+    setChats,
+    deleteChat
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

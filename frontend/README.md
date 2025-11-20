@@ -1,12 +1,73 @@
-# React + Vite
+# ZenoAI Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React-based AI chat application with real-time messaging capabilities.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Authentication**: Register, login, logout, and password reset
+- **Real-time Chat**: Socket.IO integration for instant AI responses
+- **Chat Management**: Create multiple chats, view chat history
+- **Responsive Design**: Works seamlessly on desktop and mobile
+- **Modern UI**: Gaming-inspired design with smooth animations
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React 19
+- Redux Toolkit (state management)
+- React Router (routing)
+- Socket.IO Client (real-time communication)
+- Axios (HTTP requests)
+- Vite (build tool)
+
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start the development server:
+```bash
+npm run dev
+```
+
+3. Build for production:
+```bash
+npm run build
+```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── chat/           # Chat UI components
+│   ├── AuthProvider.jsx
+│   └── ProtectedRoute.jsx
+├── pages/
+│   ├── Home.jsx        # Main chat interface
+│   ├── Login.jsx
+│   ├── Register.jsx
+│   ├── ForgotPassword.jsx
+│   └── ResetPassword.jsx
+├── store/
+│   ├── authSlice.js    # Authentication state
+│   ├── chatSlice.js    # Chat state
+│   └── store.js
+├── config/
+│   └── api.js          # API endpoints
+└── styles/
+    └── theme.css       # Theme variables
+```
+
+## API Integration
+
+The frontend connects to the backend API at `http://localhost:3000` by default. Update `src/config/api.js` to change the API URL.
+
+## Available Routes
+
+- `/` - Home (chat interface, protected)
+- `/register` - User registration
+- `/login` - User login
+- `/forgot-password` - Request password reset
+- `/reset-password` - Reset password with email verification

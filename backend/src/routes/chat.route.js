@@ -10,5 +10,7 @@ router.post("/", authMiddleware.authUser, chatController.createChat);
 router.get("/chats", authMiddleware.authUser, chatController.fetchChats);
 /* api/chat/messages/:chatId */
 router.get("/messages/:chatId", authMiddleware.authUser, chatController.fetchMessages);
+/* api/chat/:chatId */
+router.delete("/:chatId", authMiddleware.authUser, chatController.deleteChat);
 
 module.exports = router;

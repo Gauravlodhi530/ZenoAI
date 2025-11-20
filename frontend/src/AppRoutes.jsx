@@ -5,6 +5,8 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useSelector } from "react-redux";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const AppRoutes = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -32,6 +34,15 @@ const AppRoutes = () => {
           path="/login"
           element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
         />
+        <Route
+          path="/forgot-password"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <ForgotPassword />}
+        />
+        <Route
+          path="/reset-password"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <ResetPassword />}
+        />
+  
         <Route
           path="*"
           element={

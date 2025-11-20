@@ -1,9 +1,11 @@
 /* Base layout */
 .chat-layout {
     display: flex;
+    height: 100vh;
     height: 100dvh;
     background: var(--color-bg);
     font-size: var(--text-base);
+    overflow: hidden;
 }
 
 .chat-main {
@@ -11,18 +13,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    height: 100vh;
     height: 100dvh;
-    padding-top: calc(52px + env(safe-area-inset-top, 0));
     position: relative;
+    overflow: hidden;
 }
 
 @media (min-width: 960px) {
     .chat-main {
         padding-top: 64px; /* Account for fixed header */
     }
-}
-
-@media (min-width: 960px) {
+    
     .chat-layout {
         flex-direction: row;
     }
@@ -31,6 +32,10 @@
 @media (max-width: 959px) {
     .chat-layout {
         flex-direction: column;
+    }
+    
+    .chat-main {
+        padding-top: 56px; /* Mobile header height */
     }
 }
 
@@ -129,15 +134,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     pointer-events: none;
     text-align: center;
-    padding: 40px;
-    margin-top: -40px; /* Adjust for header */
+    padding: 20px;
+    padding-top: 40px;
+    overflow-y: auto;
 }
 
 .welcome-content {
     max-width: 600px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -166,12 +173,12 @@
     font-size: 2.5rem;
     font-weight: 400;
     letter-spacing: -0.02em;
-    margin: 0 0 16px 0;
+    margin: 0 0 8px 0;
     color: #e3e3e3;
 }
 
 .chat-welcome p {
-    margin: 0 0 32px 0;
+    margin: 0 0 20px 0;
     font-size: 1.1rem;
     color: #888;
     line-height: 1.6;
@@ -180,39 +187,40 @@
 
 .welcome-features {
     display: flex;
-    gap: 32px;
-    margin-top: 16px;
+    gap: 16px;
+    margin-top: 12px;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
 }
 
 .feature {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 20px;
+    gap: 6px;
+    padding: 14px 16px;
     background: rgba(30, 30, 30, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
-    min-width: 140px;
+    min-width: 120px;
 }
 
 .feature:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     background: rgba(40, 40, 40, 0.8);
     border-color: rgba(102, 126, 234, 0.3);
 }
 
 .feature-icon {
-    font-size: 24px;
-    margin-bottom: 4px;
+    font-size: 20px;
+    margin-bottom: 2px;
 }
 
 .feature span:last-child {
-    font-size: 14px;
+    font-size: 13px;
     color: #ccc;
     font-weight: 500;
 }
@@ -229,21 +237,69 @@
 }
 
 @media (max-width: 768px) {
+    .chat-welcome {
+        padding: 12px;
+        padding-top: 20px;
+        justify-content: flex-start;
+    }
+    
     .chat-welcome h1 {
-        font-size: 2.5rem;
+        font-size: 1.75rem;
+        margin-bottom: 6px;
     }
     
     .chat-welcome p {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
     }
     
     .welcome-features {
-        gap: 16px;
+        gap: 8px;
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
     .feature {
-        min-width: 120px;
-        padding: 16px;
+        min-width: auto;
+        padding: 10px 14px;
+        flex-direction: row;
+        text-align: left;
+        gap: 6px;
+    }
+    
+    .feature-icon {
+        font-size: 18px;
+        margin-bottom: 0;
+    }
+    
+    .feature span:last-child {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-welcome {
+        padding: 10px;
+        padding-top: 16px;
+    }
+    
+    .chat-welcome h1 {
+        font-size: 1.5rem;
+    }
+    
+    .chat-welcome p {
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+    }
+    
+    .welcome-content {
+        gap: 12px;
+    }
+    
+    .feature {
+        padding: 8px 12px;
     }
 }
 
@@ -505,8 +561,9 @@ Gemini-style header */
 
 @media (max-width: 768px) {
     .gemini-header {
-        padding: 0 16px;
+        padding: 0 12px;
         height: 56px;
+        display: none; /* Hide on mobile, use mobile bar instead */
     }
     
     .header-left .app-title {
@@ -528,12 +585,14 @@ Gemini-style header */
         min-width: 180px;
     }
     
-    .chat-layout .chat-main {
-        padding-top: 76px; /* 56px header + 20px spacing */
-    }
-    
     .chat-sidebar {
         top: 56px; /* Mobile header height */
+    }
+}
+
+@media (min-width: 769px) {
+    .chat-mobile-bar {
+        display: none !important;
     }
 }/* Instr
 uction Boxes */
@@ -612,38 +671,64 @@ uction Boxes */
 @media (max-width: 768px) {
     .instruction-boxes {
         grid-template-columns: 1fr;
-        gap: 12px;
-        margin: 24px 0;
+        gap: 10px;
+        margin: 12px 0;
+        padding: 0;
     }
     
     .instruction-box {
-        padding: 16px;
-        gap: 12px;
+        padding: 12px;
+        gap: 10px;
+        pointer-events: auto;
+        border-radius: 12px;
     }
     
     .instruction-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 20px;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        border-radius: 8px;
     }
     
     .instruction-content h3 {
-        font-size: 15px;
+        font-size: 13px;
+        margin-bottom: 4px;
     }
     
     .instruction-content p {
-        font-size: 13px;
+        font-size: 11px;
+        line-height: 1.3;
+    }
+    
+    .instruction-content .tagline {
+        font-size: 10px;
+        margin-bottom: 4px;
     }
 }
 
 @media (max-width: 480px) {
     .instruction-boxes {
-        margin: 20px 0;
+        margin: 10px 0;
+        gap: 8px;
     }
     
     .instruction-box {
-        padding: 14px;
-        border-radius: 12px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    
+    .instruction-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+    
+    .instruction-content h3 {
+        font-size: 12px;
+    }
+    
+    .instruction-content p {
+        font-size: 10px;
     }
 }
 
@@ -655,4 +740,150 @@ uction Boxes */
   font-size:13px;
   color:#6b7280; /* muted gray */
   font-style:normal;
+}
+
+
+/* Instruction Boxes */
+.instruction-boxes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 16px 0;
+    max-width: 600px;
+    width: 100%;
+}
+
+.instruction-box {
+    background: rgba(30, 30, 30, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+}
+
+.instruction-box:hover {
+    background: rgba(40, 40, 40, 0.8);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.instruction {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.instruction-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.instruction-content {
+    flex: 1;
+}
+
+.instruction-content h3 {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #e0e0e0;
+    line-height: 1.3;
+}
+
+.instruction-content .tagline {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    color: #6b7280;
+    font-style: normal;
+}
+
+.instruction-content p {
+    margin: 0;
+    font-size: 13px;
+    color: #888;
+    line-height: 1.4;
+}
+
+/* Responsive adjustments for instruction boxes */
+@media (max-width: 768px) {
+    .instruction-boxes {
+        gap: 10px;
+        margin: 12px 0;
+    }
+    
+    .instruction-box {
+        padding: 12px;
+        border-radius: 12px;
+    }
+    
+    .instruction {
+        gap: 10px;
+    }
+    
+    .instruction-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+        border-radius: 8px;
+    }
+    
+    .instruction-content h3 {
+        font-size: 14px;
+        margin-bottom: 3px;
+    }
+    
+    .instruction-content .tagline {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+    
+    .instruction-content p {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .instruction-boxes {
+        margin: 10px 0;
+        gap: 8px;
+    }
+    
+    .instruction-box {
+        padding: 10px;
+        border-radius: 10px;
+    }
+    
+    .instruction {
+        gap: 8px;
+    }
+    
+    .instruction-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+    
+    .instruction-content h3 {
+        font-size: 13px;
+    }
+    
+    .instruction-content .tagline {
+        font-size: 10px;
+    }
+    
+    .instruction-content p {
+        font-size: 11px;
+    }
 }

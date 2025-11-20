@@ -1,6 +1,7 @@
 const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 async function registerUser(req, res) {
   const {
@@ -100,4 +101,46 @@ async function logoutUser(req, res) {
   }
 }
 
-module.exports = { registerUser, loginUser, getCurrentUser, logoutUser };
+
+
+
+
+// User submits email for password reset
+async function resetPasswordRequest(req, res) {
+  const { email } = req.body;
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "user not found" });
+  }
+  // Optionally, generate a token and send email here. For now, just success response.
+  // You can set a resetToken if you want to add email verification later.
+  return res.status(200).json({ message: "user found, proceed to reset password", userId: user._id });
+}
+
+// User submits new password and confirm password
+async function resetPassword(req, res) {
+  const { email, newPassword, confirmPassword } = req.body;
+  if (!email || !newPassword || !confirmPassword) {
+    return res.status(400).json({ message: "all fields are required" });
+  }
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: "passwords do not match" });
+  }
+  const user = await userModel.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ message: "user not found" });
+  }
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+  await user.save();
+  return res.status(200).json({ message: "password reset successful" });
+}
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getCurrentUser,
+  logoutUser,
+  resetPasswordRequest,
+  resetPassword,
+};

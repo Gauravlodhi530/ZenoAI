@@ -3,31 +3,37 @@
     width: 280px;
     flex-shrink: 0;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(15, 15, 15, 0.95);
+    background: rgba(15, 15, 15, 0.98);
     backdrop-filter: blur(20px);
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 64px;
-    /* Start below header */
+    top: 56px;
     bottom: 0;
-    left: -300px;
+    left: 0;
     z-index: 999;
+    transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
 }
 
 .chat-sidebar.open {
-    transform: translateX(300px);
+    transform: translateX(0);
 }
 
 @media (min-width: 960px) {
     .chat-sidebar.desktop-visible {
         position: static;
         transform: none !important;
-        left: 0;
         top: 0;
         box-shadow: none;
+    }
+}
+
+@media (max-width: 959px) {
+    .chat-sidebar {
+        width: 85vw;
+        max-width: 320px;
     }
 }
 
@@ -35,7 +41,7 @@
     padding: 16px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(20, 20, 20, 0.8);
-    /* Ensure visibility */
+    flex-shrink: 0;
 }
 
 .new-chat-btn {
@@ -53,7 +59,12 @@
     cursor: pointer;
     transition: all 0.2s ease;
     backdrop-filter: blur(10px);
-    margin-top: 70px;
+}
+
+@media (min-width: 960px) {
+    .new-chat-btn {
+        margin-top: 0;
+    }
 }
 
 .new-chat-btn:hover {
@@ -71,11 +82,12 @@
 
 .sidebar-header {
     padding: 16px 20px 8px 20px;
+    flex-shrink: 0;
 }
 
 .sidebar-header h2 {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #888;
     text-transform: uppercase;
@@ -85,10 +97,12 @@
 .chat-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 16px;
+    gap: 4px;
+    padding: 8px 12px;
     overflow-y: auto;
+    overflow-x: hidden;
     flex: 1;
+    -webkit-overflow-scrolling: touch;
 }
 
 .chat-list::-webkit-scrollbar {
@@ -104,33 +118,87 @@
     border-radius: 3px;
 }
 
+.chat-list-item-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+}
+
+.chat-list-item-wrapper.active {
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.chat-list-item-wrapper:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.chat-list-item-wrapper:active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
 .chat-list-item {
     text-align: left;
     background: transparent;
     border: none;
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 12px 14px;
+    border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     font: inherit;
     position: relative;
     transition: all 0.2s ease;
-    margin: 2px 8px;
+    flex: 1;
+    min-width: 0;
 }
 
-.chat-list-item.active {
-    background: rgba(255, 255, 255, 0.1);
+.delete-chat-btn {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    opacity: 0;
+    transition: all 0.2s ease;
+    margin-right: 4px;
+    flex-shrink: 0;
 }
 
-.chat-list-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+.chat-list-item-wrapper:hover .delete-chat-btn,
+.chat-list-item-wrapper:active .delete-chat-btn {
+    opacity: 1;
+}
+
+.delete-chat-btn:active {
+    background: rgba(239, 68, 68, 0.3);
+    transform: scale(0.95);
+}
+
+.delete-chat-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    color: #ef4444;
+}
+
+/* Show delete button on mobile when item is active */
+@media (max-width: 959px) {
+    .chat-list-item-wrapper.active .delete-chat-btn {
+        opacity: 1;
+    }
 }
 
 .chat-icon {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     stroke-width: 2;
     color: #888;
     flex-shrink: 0;
@@ -145,6 +213,12 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     flex: 1;
+    min-width: 0;
+}
+
+.chat-list-item-wrapper.active .title-line {
+    color: #f5f5f5;
+    font-weight: 500;
 }
 
 .empty-state {
@@ -169,19 +243,20 @@
 .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    top: 56px;
+    background: rgba(0, 0, 0, 0.7);
     border: none;
     padding: 0;
     margin: 0;
     cursor: pointer;
-    z-index: 35;
+    z-index: 998;
     backdrop-filter: blur(4px);
     transition: opacity 0.3s ease;
 }
 
 @media (min-width: 960px) {
     .sidebar-backdrop {
-        display: none;
+        display: none !important;
     }
 }
 

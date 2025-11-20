@@ -14,6 +14,7 @@ import {
   sendingStarted,
   sendingFinished,
   setChats,
+  deleteChat as deleteChatAction,
 } from "../store/chatSlice.js";
 import { logout } from "../store/authSlice.js";
 import { API_URL, SOCKET_URL } from '../config/api';
@@ -142,6 +143,28 @@ const Home = () => {
     );
   };
 
+  const handleDeleteChat = async (chatId) => {
+    if (!window.confirm("Are you sure you want to delete this chat?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_URL}/api/chat/${chatId}`, {
+        withCredentials: true,
+      });
+      
+      dispatch(deleteChatAction(chatId));
+      
+      // Clear messages if the deleted chat was active
+      if (activeChatId === chatId) {
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      alert("Failed to delete chat. Please try again.");
+    }
+  };
+
   return (
     <div className="chat-layout minimal">
       <div className="gemini-header">
@@ -190,6 +213,7 @@ const Home = () => {
           getMessages(id);
         }}
         onNewChat={handleNewChat}
+        onDeleteChat={handleDeleteChat}
         open={sidebarOpen}
       />
       <main className="chat-main" role="main">
