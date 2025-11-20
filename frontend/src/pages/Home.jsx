@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import ChatMobileBar from "../components/chat/ChatMobileBar.jsx";
 import ChatSidebar from "../components/chat/ChatSidebar.jsx";
@@ -35,14 +35,19 @@ const Home = () => {
     if (title) title = title.trim();
     if (!title) return;
 
-    const response = await axios.post(
-      `${API_URL}/api/chat`,
-      { title },
-      { withCredentials: true }
-    );
-    getMessages(response.data.chat._id);
-    dispatch(startNewChat(response.data.chat));
-    setSidebarOpen(false);
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/chat`,
+        { title },
+        { withCredentials: true }
+      );
+      getMessages(response.data.chat._id);
+      dispatch(startNewChat(response.data.chat));
+      setSidebarOpen(false);
+    } catch (error) {
+      console.error("Error creating chat:", error);
+      alert("Failed to create chat. Please try again.");
+    }
   };
 
   const handleLogout = async () => {
@@ -59,17 +64,28 @@ const Home = () => {
       if (socket) {
         socket.disconnect();
       }
+      // Clear persisted state
+      localStorage.removeItem('persist:root');
     }
   };
 
   useEffect(() => {
+    // Fetch chats
     axios
       .get(`${API_URL}/api/chat/chats`, { withCredentials: true })
       .then((response) => {
         dispatch(setChats(response.data.chats.reverse()));
+      })
+      .catch((error) => {
+        console.error("Error fetching chats:", error);
       });
 
+    // Setup socket
     const tempSocket = io(SOCKET_URL, { withCredentials: true });
+
+    tempSocket.on("connect", () => {
+      console.log("Socket connected");
+    });
 
     tempSocket.on("ai-response", (messagePayload) => {
       setMessages((prevMessages) => [
@@ -83,7 +99,18 @@ const Home = () => {
       dispatch(sendingFinished());
     });
 
+    tempSocket.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+    });
+
     setSocket(tempSocket);
+
+    // Cleanup on unmount
+    return () => {
+      if (tempSocket) {
+        tempSocket.disconnect();
+      }
+    };
   }, [dispatch]);
 
   const sendMessage = async () => {
@@ -129,18 +156,23 @@ const Home = () => {
   };
 
   const getMessages = async (chatId) => {
-    const response = await axios.get(
-      `${API_URL}/api/chat/messages/${chatId}`,
-      { withCredentials: true }
-    );
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/chat/messages/${chatId}`,
+        { withCredentials: true }
+      );
 
-    setMessages(
-      response.data.messages.map((m) => ({
-        type: m.role === "user" ? "user" : "ai",
-        content: m.content,
-        timestamp: new Date(m.createdAt).getTime() || Date.now(),
-      }))
-    );
+      setMessages(
+        response.data.messages.map((m) => ({
+          type: m.role === "user" ? "user" : "ai",
+          content: m.content,
+          timestamp: new Date(m.createdAt).getTime() || Date.now(),
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      setMessages([]);
+    }
   };
 
   const handleDeleteChat = async (chatId) => {
