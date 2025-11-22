@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import ChatMobileBar from "../components/chat/ChatMobileBar.jsx";
 import ChatSidebar from "../components/chat/ChatSidebar.jsx";
@@ -17,7 +18,6 @@ import {
 } from "../store/chatSlice.js";
 import { logout } from "../store/authSlice.js";
 import {  SOCKET_URL, apiClient } from '../config/api';
-import useNavigator from "../hooks/useNavigator.jsx";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -29,7 +29,7 @@ const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
-  const navigate = useNavigator();
+  const navigate = useNavigate();
 
   const handleNewChat = async () => {
     let title = window.prompt("Enter a title for the new chat:", "");
