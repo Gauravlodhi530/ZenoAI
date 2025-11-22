@@ -9,7 +9,7 @@ const cors = require('cors');
 /* Using Middleware*/
 const app = express();
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: ['http://localhost:5173', 'https://zenoai-uy9e.onrender.com'],
     credentials: true,
 }));
 app.use(express.json());

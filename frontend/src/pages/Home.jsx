@@ -6,7 +6,6 @@ import ChatMessages from "../components/chat/ChatMessages.jsx";
 import ChatComposer from "../components/chat/ChatComposer.jsx";
 import "../components/chat/ChatLayout.css";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import {
   startNewChat,
   selectChat,
@@ -17,7 +16,7 @@ import {
   deleteChat as deleteChatAction,
 } from "../store/chatSlice.js";
 import { logout } from "../store/authSlice.js";
-import { API_URL, SOCKET_URL } from '../config/api';
+import { API_URL, SOCKET_URL, apiClient } from '../config/api';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -40,11 +39,7 @@ const Home = () => {
       console.log("API URL:", API_URL);
       console.log("User:", user);
       
-      const response = await axios.post(
-        `${API_URL}/api/chat`,
-        { title },
-        { withCredentials: true }
-      );
+      const response = await apiClient.post('/api/chat', { title });
       
       console.log("Chat created successfully:", response.data.chat);
       
@@ -71,27 +66,33 @@ const Home = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `${API_URL}/api/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
+      // Call backend logout endpoint
+      await apiClient.post('/api/auth/logout');
     } catch (error) {
-      // Handle logout error silently
+      console.error("Logout error:", error);
     } finally {
-      dispatch(logout());
+      // Disconnect socket
       if (socket) {
         socket.disconnect();
       }
-      // Clear persisted state
+      
+      // Clear all auth data
+      dispatch(logout());
+      
+      // Clear all localStorage items
       localStorage.removeItem('persist:root');
+      localStorage.removeItem('user');
+      localStorage.clear();
+      
+      // Force reload to clear any cached state
+      window.location.href = '/login';
     }
   };
 
   useEffect(() => {
     // Fetch chats
-    axios
-      .get(`${API_URL}/api/chat/chats`, { withCredentials: true })
+    apiClient
+      .get('/api/chat/chats')
       .then((response) => {
         dispatch(setChats(response.data.chats.reverse()));
       })
@@ -99,11 +100,14 @@ const Home = () => {
         console.error("Error fetching chats:", error);
       });
 
-    // Setup socket
-    const tempSocket = io(SOCKET_URL, { withCredentials: true });
+    // Setup socket with authentication
+    const tempSocket = io(SOCKET_URL, { 
+      withCredentials: true,
+      transports: ['websocket', 'polling']
+    });
 
     tempSocket.on("connect", () => {
-      console.log("Socket connected");
+      console.log("Socket connected successfully");
     });
 
     tempSocket.on("ai-response", (messagePayload) => {
@@ -176,10 +180,7 @@ const Home = () => {
 
   const getMessages = async (chatId) => {
     try {
-      const response = await axios.get(
-        `${API_URL}/api/chat/messages/${chatId}`,
-        { withCredentials: true }
-      );
+      const response = await apiClient.get(`/api/chat/messages/${chatId}`);
 
       setMessages(
         response.data.messages.map((m) => ({
@@ -200,9 +201,7 @@ const Home = () => {
     }
 
     try {
-      await axios.delete(`${API_URL}/api/chat/${chatId}`, {
-        withCredentials: true,
-      });
+      await apiClient.delete(`/api/chat/${chatId}`);
       
       dispatch(deleteChatAction(chatId));
       
@@ -268,7 +267,7 @@ const Home = () => {
         open={sidebarOpen}
       />
       <main className="chat-main" role="main">
-        {messages.length === 0 && (
+        {!activeChatId ? (
           <div className="chat-welcome" aria-hidden="true">
             <div className="welcome-content">
               <h1>Hello, {user?.fullName?.firstName || "User"}</h1>
@@ -278,21 +277,17 @@ const Home = () => {
               <div className="instruction-boxes">
                 <div
                   className="instruction-box"
-                  onClick={() =>
-                    dispatch(setInput("Create a chat application"))
-                  }
+                  onClick={handleNewChat}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div className="instruction">
-                    <div className="instruction-icon">💻</div>
+                    <div className="instruction-icon">➕</div>
                     <div className="instruction-content">
-                      <h3>Create a chat application</h3>
-
-                      {/* Tagline — swap text for any other tagline you like */}
+                      <h3>Create a New Chat</h3>
                       <p className="tagline">
-                        ZeneAI — Talk. Think. Transform.
+                        Start a new conversation to begin.
                       </p>
-
-                      <p>Create a new chat first</p>
+                      <p>Click here to create a chat</p>
                     </div>
                   </div>
                 </div>
@@ -314,8 +309,9 @@ const Home = () => {
               </div>
             </div>
           </div>
+        ) : (
+          <ChatMessages messages={messages} isSending={isSending} />
         )}
-        <ChatMessages messages={messages} isSending={isSending} />
         {activeChatId && (
           <ChatComposer
             input={input}

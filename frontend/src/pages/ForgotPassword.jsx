@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { API_URL } from '../config/api';
+import { apiClient } from '../config/api';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -16,11 +15,7 @@ const ForgotPassword = () => {
         setError('');
 
         try {
-            const response = await axios.post(
-                `${API_URL}/api/auth/reset-password-request`,
-                { email },
-                { withCredentials: true }
-            );
+            const response = await apiClient.post('/api/auth/reset-password-request', { email });
 
             setSuccess(true);
             // Navigate to reset password page with email

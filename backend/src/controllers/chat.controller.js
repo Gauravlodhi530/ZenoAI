@@ -62,6 +62,14 @@ async function fetchMessages(req, res) {
 
   const { chatId } = req.params;
   try {
+    const chat = await chatModel.findOne({ _id: chatId, user: req.user._id });
+
+    if (!chat) {
+      return res.status(404).json({
+        message: "Chat not found or unauthorized access",
+      });
+    }
+
     const messages = await messageModel.find({ chat: chatId });
     res.status(200).json({
       message: "Messages fetched successfully",

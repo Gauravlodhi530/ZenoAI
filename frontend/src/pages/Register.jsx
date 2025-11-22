@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginStart, loginFailure, clearError } from '../store/authSlice';
-import axios from 'axios';
-import { API_URL } from '../config/api';
+import { loginStart, loginFailure, clearError, resetLoading } from '../store/authSlice';
+import { apiClient } from '../config/api';
 
 const Register = () => {
     const [ form, setForm ] = useState({ email: '', firstname: '', lastname: '', password: '', confirmPassword: '' });
@@ -42,18 +41,20 @@ const Register = () => {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/api/auth/register`, {
+            const response = await apiClient.post('/api/auth/register', {
                 email: form.email,
                 fullName: {
                     firstName: form.firstname,
                     lastName: form.lastname
                 },
                 password: form.password
-            }, {
-                withCredentials: true
             });
 
             console.log('Registration successful:', response.data);
+            
+            // Reset loading state before navigating
+            dispatch(resetLoading());
+
             // Navigate to login page after successful registration
             navigate("/login", { 
                 state: { 

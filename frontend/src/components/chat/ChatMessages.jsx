@@ -18,6 +18,11 @@ const ChatMessages = ({ messages, isSending }) => {
 
   return (
     <div className="messages" aria-live="polite">
+      {messages.length === 0 && !isSending && (
+        <div className="empty-chat-placeholder">
+          <p>How can I help you today?</p>
+        </div>
+      )}
       {messages.map((m, index) => (
         <div key={index} className={`msg msg-${m.type}`}>
           <div className="msg-header">
@@ -31,10 +36,6 @@ const ChatMessages = ({ messages, isSending }) => {
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               )}
-            </div>
-            <div className="msg-info">
-              <div className="msg-role">{m.type === 'user' ? 'You' : 'AI Assistant'}</div>
-              <div className="msg-time">{formatTime(m.timestamp)}</div>
             </div>
           </div>
           <div className="msg-bubble">
@@ -82,10 +83,7 @@ const ChatMessages = ({ messages, isSending }) => {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
-            <div className="msg-info">
-              <div className="msg-role">AI Assistant</div>
-              <div className="msg-time">Thinking...</div>
-            </div>
+
           </div>
           <div className="msg-bubble">
             <div className="typing-indicator">

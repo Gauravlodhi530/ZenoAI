@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { API_URL } from '../config/api';
+import { apiClient } from '../config/api';
 
 const ResetPassword = () => {
     const [form, setForm] = useState({ newPassword: '', confirmPassword: '' });
@@ -42,15 +41,11 @@ const ResetPassword = () => {
         setError('');
 
         try {
-            await axios.post(
-                `${API_URL}/api/auth/reset-password`,
-                {
-                    email,
-                    newPassword: form.newPassword,
-                    confirmPassword: form.confirmPassword
-                },
-                { withCredentials: true }
-            );
+            await apiClient.post('/api/auth/reset-password', {
+                email,
+                newPassword: form.newPassword,
+                confirmPassword: form.confirmPassword
+            });
 
             navigate('/login', {
                 state: { message: 'Password reset successful! Please log in with your new password.' }

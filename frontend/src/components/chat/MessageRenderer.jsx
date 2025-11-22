@@ -26,6 +26,11 @@ const MessageRenderer = ({ content, type }) => {
                 return (
                   <div key={partIndex} className="code-block">
                     <div className="code-header">
+                      <div className="code-controls">
+                        <div className="window-dot dot-red"></div>
+                        <div className="window-dot dot-yellow"></div>
+                        <div className="window-dot dot-green"></div>
+                      </div>
                       <span className="code-language">{language}</span>
                       <button 
                         className="copy-code-btn"

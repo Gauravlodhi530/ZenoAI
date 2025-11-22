@@ -6,9 +6,9 @@ import {
   loginSuccess,
   loginFailure,
   clearError,
+  resetLoading,
 } from "../store/authSlice";
-import axios from "axios";
-import { API_URL } from "../config/api";
+import { apiClient } from "../config/api";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -24,6 +24,7 @@ const Login = () => {
       setSuccessMessage(location.state.message);
     }
     dispatch(clearError());
+    dispatch(resetLoading());
   }, [location.state, dispatch]);
 
   function handleChange(e) {
@@ -38,19 +39,17 @@ const Login = () => {
     setSuccessMessage("");
 
     try {
-      const response = await axios.post(
-        `${API_URL}/api/auth/login`,
-        {
-          email: form.email,
-          password: form.password,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await apiClient.post('/api/auth/login', {
+        email: form.email,
+        password: form.password,
+      });
 
       console.log("Login successful:", response.data);
+      
+      // Save user data to Redux (which will also save to localStorage via authSlice)
       dispatch(loginSuccess(response.data.user));
+      
+      // Navigate to home
       navigate("/");
     } catch (err) {
       console.error("Login failed:", err);
@@ -134,7 +133,7 @@ const Login = () => {
               />
             </div>
 
-            <div className="gaming-form-group input-wrapper">
+            <div className="gaming-form-group password-input-wrapper">
               <input
                 name="password"
                 className="gaming-input"
@@ -150,8 +149,7 @@ const Login = () => {
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="input-icon-right"
-                style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                className="password-toggle-btn"
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
