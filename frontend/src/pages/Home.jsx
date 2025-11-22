@@ -16,7 +16,8 @@ import {
   deleteChat as deleteChatAction,
 } from "../store/chatSlice.js";
 import { logout } from "../store/authSlice.js";
-import { API_URL, SOCKET_URL, apiClient } from '../config/api';
+import {  SOCKET_URL, apiClient } from '../config/api';
+import useNavigator from "../hooks/useNavigator.jsx";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -28,6 +29,7 @@ const Home = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
+  const navigate = useNavigator();
 
   const handleNewChat = async () => {
     let title = window.prompt("Enter a title for the new chat:", "");
@@ -35,13 +37,9 @@ const Home = () => {
     if (!title) return;
 
     try {
-      console.log("Creating chat with title:", title);
-      console.log("API URL:", API_URL);
-      console.log("User:", user);
+      
       
       const response = await apiClient.post('/api/chat', { title });
-      
-      console.log("Chat created successfully:", response.data.chat);
       
       // Add the new chat to Redux state
       dispatch(startNewChat(response.data.chat));
@@ -52,15 +50,9 @@ const Home = () => {
       // Close sidebar on mobile
       setSidebarOpen(false);
     } catch (error) {
-      console.error("Error creating chat:", error);
-      console.error("Error response:", error.response);
-      console.error("Error status:", error.response?.status);
-      console.error("Error data:", error.response?.data);
-      
-      const errorMessage = error.response?.data?.message || error.message || "Unknown error";
-      const statusCode = error.response?.status || "No response";
-      
-      alert(`Failed to create chat!\n\nError: ${errorMessage}\nStatus: ${statusCode}\n\nPlease check:\n✓ Backend is running (http://localhost:3000)\n✓ You are logged in\n✓ MongoDB is connected\n✓ Check browser console for details`);
+  
+      console.error("Error creating new chat:", error);
+      alert("Failed to create new chat. Please try again.");
     }
   };
 
@@ -84,8 +76,8 @@ const Home = () => {
       localStorage.removeItem('user');
       localStorage.clear();
       
-      // Force reload to clear any cached state
-      window.location.href = '/login';
+ 
+      navigate('/login', { replace: true });// Redirect to login page
     }
   };
 
