@@ -138,7 +138,6 @@ body {
   color: var(--color-text-muted);
   margin-bottom: 30px;
   line-height: 1.6;
-  
 }
 
 
@@ -216,13 +215,11 @@ body {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: var(--transition-fast);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-top: 10px;
   transform: translateY(0);
-  box-shadow: none;
-
 }
 
 .gaming-btn:hover:not(:disabled) {
@@ -256,7 +253,15 @@ body {
 
 .gaming-footer a:hover {
   text-decoration: underline;
+}
 
+.gaming-copyright {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
 }
 
 /* Form Styles - Compact */
@@ -755,8 +760,7 @@ body {
 }
 
 .gaming-btn:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 2px 8px color-mix(in oklab, var(--color-primary) 25%, transparent);
+  transform: translateY(0);
 }
 
 /* Focus states for accessibility */
@@ -765,20 +769,16 @@ body {
 }
 
 .gaming-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid rgba(74, 144, 226, 0.5);
   outline-offset: 2px;
-  transform: translateY(0);
 }
 
-.gaming-btn:focus:not(:focus-visible) {
-  outline: none;
+/* Smooth transitions */
+* {
+  transition: all 0.3s ease;
 }
 
-/* Smooth transitions - scoped to avoid conflicts */
-.gaming-input,
-.gaming-btn,
-.gaming-footer a,
-.password-toggle-btn {
+.gaming-auth-card * {
   transition: all 0.3s ease;
 }
 
