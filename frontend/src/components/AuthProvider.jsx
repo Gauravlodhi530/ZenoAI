@@ -12,19 +12,22 @@ const AuthProvider = ({ children }) => {
       try {
         // First, try to get user from backend (validates session/cookie)
         const response = await apiClient.get('/api/auth/me');
-        dispatch(loginSuccess(response.data.user));
+        // Pass user object wrapped in expected structure
+        dispatch(loginSuccess({ user: response.data.user }));
       } catch (error) {
         // If backend auth fails, check localStorage as fallback
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
+        const storedToken = localStorage.getItem('token');
+        
+        if (storedUser && storedToken) {
           try {
             const user = JSON.parse(storedUser);
             // Restore from localStorage but verify with backend
-            dispatch(restoreAuth(user));
+            dispatch(restoreAuth({ user, token: storedToken }));
             
             // Try to revalidate in background
             apiClient.get('/api/auth/me')
-              .then(res => dispatch(loginSuccess(res.data.user)))
+              .then(res => dispatch(loginSuccess({ user: res.data.user })))
               .catch(() => {
                 // If revalidation fails, clear everything
                 dispatch(logout());

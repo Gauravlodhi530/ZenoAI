@@ -93,9 +93,13 @@ const Home = () => {
       });
 
     // Setup socket with authentication
+    const token = localStorage.getItem('token');
     const tempSocket = io(SOCKET_URL, { 
       withCredentials: true,
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      auth: {
+        token: token
+      }
     });
 
     tempSocket.on("connect", () => {

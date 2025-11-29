@@ -47,7 +47,7 @@ const Login = () => {
       console.log("Login successful:", response.data);
       
       // Save user data to Redux (which will also save to localStorage via authSlice)
-      dispatch(loginSuccess(response.data.user));
+      dispatch(loginSuccess({ user: response.data.user, token: response.data.token }));
       
       // Navigate to home
       navigate("/");
