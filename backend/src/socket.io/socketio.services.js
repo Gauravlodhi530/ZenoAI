@@ -98,9 +98,9 @@ function initSocketServer(httpServer) {
           role: "model",
         });
       } catch (error) {
+        console.error("Error in ai-message handler:", error.message);
         socket.emit("ai-response", {
-          content:
-            "Sorry, I encountered an error while processing your message. Please try again.",
+          content: "Sorry, I encountered an error while processing your message. Please try again.",
           chat: messagePayload.chat,
           error: true,
         });

@@ -40,7 +40,7 @@ async function registerUser(req, res) {
       },
     });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Registration error:", error.message);
     res.status(500).json({
       message: "server error during registration",
     });
@@ -78,7 +78,7 @@ async function loginUser(req, res) {
       token,
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("Login error:", error.message);
     res.status(500).json({
       message: "server error during login",
     });
@@ -131,7 +131,7 @@ async function resetPasswordRequest(req, res) {
     // You can set a resetToken if you want to add email verification later.
     return res.status(200).json({ message: "user found, proceed to reset password", userId: user._id });
   } catch (error) {
-    console.error("Reset password request error:", error);
+    console.error("Reset password request error:", error.message);
     return res.status(500).json({ message: "server error" });
   }
 }
@@ -155,7 +155,7 @@ async function resetPassword(req, res) {
     await user.save();
     return res.status(200).json({ message: "password reset successful" });
   } catch (error) {
-    console.error("Reset password error:", error);
+    console.error("Reset password error:", error.message);
     return res.status(500).json({ message: "server error" });
   }
 }

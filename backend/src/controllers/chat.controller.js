@@ -28,8 +28,7 @@ async function createChat(req, res) {
       },
     });
   } catch (error) {
-    // Catch any database-related errors
-    console.error("Error creating chat:", error);
+    console.error("Error creating chat:", error.message);
     res.status(500).json({
       message: "Failed to create chat due to a server error.",
     });
@@ -51,7 +50,7 @@ async function fetchChats(req, res) {
       chats,
     });
   } catch (error) {
-    console.error("Error fetching chats:", error);
+    console.error("Error fetching chats:", error.message);
     res.status(500).json({
       message: "Failed to fetch chats due to a server error.",
     });
@@ -76,7 +75,7 @@ async function fetchMessages(req, res) {
       messages,
     });
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    console.error("Error fetching messages:", error.message);
     res.status(500).json({
       message: "Failed to fetch messages due to a server error.",
     });
@@ -114,7 +113,7 @@ async function deleteChat(req, res) {
       chatId,
     });
   } catch (error) {
-    console.error("Error deleting chat:", error);
+    console.error("Error deleting chat:", error.message);
     res.status(500).json({
       message: "Failed to delete chat due to a server error.",
     });
