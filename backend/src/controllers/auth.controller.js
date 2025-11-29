@@ -64,7 +64,7 @@ async function loginUser(req, res) {
         message: "invalid password",
       });
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
     res.cookie("token", token);
 

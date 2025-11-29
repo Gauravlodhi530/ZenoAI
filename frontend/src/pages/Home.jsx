@@ -26,6 +26,7 @@ const Home = () => {
   const input = useSelector((state) => state.chat.input);
   const isSending = useSelector((state) => state.chat.isSending);
   const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -82,6 +83,21 @@ const Home = () => {
   };
 
   useEffect(() => {
+    // Get token from Redux state or localStorage as fallback
+    const authToken = token || localStorage.getItem('token');
+    
+    // If no token, redirect to login
+    if (!authToken) {
+      console.warn("No token found, redirecting to login");
+      navigate('/login', { replace: true });
+      return;
+    }
+
+    // Ensure token is in localStorage for axios interceptor
+    if (authToken && !localStorage.getItem('token')) {
+      localStorage.setItem('token', authToken);
+    }
+
     // Fetch chats
     apiClient
       .get('/api/chat/chats')
@@ -90,15 +106,20 @@ const Home = () => {
       })
       .catch((error) => {
         console.error("Error fetching chats:", error);
+        // If 401, token might be invalid, redirect to login
+        if (error.response?.status === 401) {
+          dispatch(logout());
+          localStorage.removeItem('token');
+          navigate('/login', { replace: true });
+        }
       });
 
     // Setup socket with authentication
-    const token = localStorage.getItem('token');
     const tempSocket = io(SOCKET_URL, { 
       withCredentials: true,
       transports: ['websocket', 'polling'],
       auth: {
-        token: token
+        token: authToken
       }
     });
 
@@ -120,6 +141,12 @@ const Home = () => {
 
     tempSocket.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
+      // If authentication error, redirect to login
+      if (error.message?.includes("Authentication error")) {
+        dispatch(logout());
+        localStorage.removeItem('token');
+        navigate('/login', { replace: true });
+      }
     });
 
     setSocket(tempSocket);
@@ -130,7 +157,7 @@ const Home = () => {
         tempSocket.disconnect();
       }
     };
-  }, [dispatch]);
+  }, [dispatch, navigate, token]);
 
   const sendMessage = async () => {
     const trimmed = input.trim();

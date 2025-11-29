@@ -13,15 +13,33 @@ function initSocketServer(httpServer) {
     },
   });
 
+  const extractToken = (socket) => {
+    const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
+    if (cookies.token) {
+      return cookies.token;
+    }
+
+    if (socket.handshake.auth?.token) {
+      return socket.handshake.auth.token;
+    }
+
+    const authHeader = socket.handshake.headers?.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      return authHeader.split(" ")[1];
+    }
+
+    return null;
+  };
+
   io.use(async (socket, next) => {
     try {
-      const cookies = cookie.parse(socket.handshake.headers?.cookie || "");
+      const token = extractToken(socket);
 
-      if (!cookies.token) {
+      if (!token) {
         return next(new Error("Authentication error: No token provided"));
       }
 
-      const decode = jwt.verify(cookies.token, process.env.JWT_SECRET);
+      const decode = jwt.verify(token, process.env.JWT_SECRET);
       const user = await userModel.findById(decode.id);
 
       if (!user) {
